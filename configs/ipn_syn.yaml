@@ -1,0 +1,35 @@
+seed: 0                            # Random seed
+exp_name: "syn_data/ipn_syn"        # Experiment name for artifact folders
+# DATA PARAMETERS
+dataset_format: "ode"              # Type of dataset to create (ODE vs NCDE)
+syn_data: True                     # Whether or not we'll be using synthetic data
+num_sequences: 10000               # The number of sequences we'll create in the dataset
+dataset_name: "syn_data"             # The type of synthetic data we're generating
+dataset_dir: "datasets/syn_data/syn_data_numSeq10000.csv"
+sample_rate: 2                     # The rate at which we sample data
+dual_sample_rate: 0.5
+delta_t: 0.05
+max_time: 12.56637                 # Max time = 4*math.pi  The maximum time that any trajectory will go
+max_time_val: 9.42478              # Max time = 3*math.pi  The maximum time for validation purposes
+max_val_samples: 1
+# MODEL PARAMETERS
+model_type: "ipn"              # The type of model that we're using at the foundation of our approach {'ncde' or 'gruode'}
+input_size: 3                     # The number of input channels to the model: 2*num_spirals
+hidden_size: 50                   # The number of hidden units in underlying NN function within ODE
+p_hidden: 25                      # The number of intermediate hidden units in the FC network layers
+prep_hidden: 25                   # The number of intermediate hidden units in the f_prep function
+cov_size: 1                       # The dimension of the static covariates used to prepare the initial hidden state
+cov_hidden: 1                     # The number of hidden units used in prepping the initial hidden state from the static covariates
+# OPTIMIZATION/LOSS PARAMETERS
+grad_clip_value: 1.0               # The maximum (absolute) value of gradients allowed
+lrn_rt: 0.005                     # Learning rate
+tr_batch_size: 256                # The batch size while training
+# TRAINING HYPERPARAMETERS
+num_epochs: 100
+val_freq: 10
+# CLASSIFIER HYPERPARAMETERS
+clf_lr: 0.001
+clf_num_epochs: 20
+clf_num_layers: 2
+clf_output_dims: 2
+clf_val_freq: 5
