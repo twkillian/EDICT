@@ -133,7 +133,7 @@ def main(config, log_online, options, demo):
 
     print(f"Last validation loss: {val_loss:.5f}")
 
-    if params['dataset_name'] in ['syn_data', 'gestures']:
+    if 'dataset_name' == 'syn_data':
         print(f"Evaluating trained model from experiment {params['exp_name']} on newly generated test conditions.")
         plot_trained_model(model, params, model_dir=ckpt_fname, save_dir=local_save_dir, format='png')
 

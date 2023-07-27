@@ -69,7 +69,7 @@ def run_clf_epoch(dl, model, clf, criterion, optimizer, delta_t=0.05, max_time=5
 
 
 @click.command()
-@click.option('--exp_name', '-e', default='syn_data/niw_gruode_syn_1', type=str, help='specify the pretrained sequential model')
+@click.option('--exp_name', '-e', default='syn_data/edict_syn_0_', type=str, help='specify the pretrained sequential model')
 @click.option('--add_noise', '-n', default=-0.1, type=float, help='the maximum level of noise exponentially added to observations')
 @click.option('--seed', '-s', default=0, type=int, help='Random seed for varying experimental initialization.')
 @click.option('--device', default='cuda', type=str, help='Force execution on a specific device...')
