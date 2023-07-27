@@ -15,9 +15,6 @@ import os
 import yaml
 
 import torch
-from torch.utils.tensorboard import SummaryWriter
-
-import wandb
 
 from data_utils import define_dataset
 from model_utils import define_model
@@ -29,7 +26,6 @@ from calibration import calc_calibration
 
 @click.command()
 @click.option('--config', '-c', default="edict_base_syn")
-@click.option('--log_online', is_flag=True, help="log on wandb")
 @click.option('--options', '-o', multiple=True, nargs=2, type=click.Tuple([str, str]))
 @click.option('--demo', '-d', is_flag=True, help="Runs through pre-trained model and constructs figures demonstrating model performance on generated data")
 def main(config, log_online, options, demo):
@@ -52,10 +48,6 @@ def main(config, log_online, options, demo):
     save_dir = params.get('save_dir', './runs/')
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-    if log_online:
-        wandb.init(project='EDICT', config = params,
-                name = f"seq_{params['exp_name']}")
    
     ckpt_fname = os.path.join(save_dir, params['exp_name'], "checkpoint.pt")
     local_save_dir = os.path.join("runs", params['exp_name'])
@@ -128,11 +120,6 @@ def main(config, log_online, options, demo):
 
                     df, calib_results = calc_calibration(params, model, 'val', device, prefix = 'val/')
 
-                    if log_online:
-                        wandb.log({**calib_results, **{
-                            'val/loss': val_loss
-                        }}, step = i_epch)
-
                     # If best_val_loss, save the model
                     if val_loss < best_val_loss:
                         best_val_loss = val_loss
@@ -145,8 +132,6 @@ def main(config, log_online, options, demo):
                         print(f"Saved model into {ckpt_fname}.")
 
     print(f"Last validation loss: {val_loss:.5f}")
-    if log_online:
-        wandb.log({'last_val_loss': val_loss})
 
     if params['dataset_name'] in ['syn_data', 'gestures']:
         print(f"Evaluating trained model from experiment {params['exp_name']} on newly generated test conditions.")
@@ -158,8 +143,6 @@ def main(config, log_online, options, demo):
 
     test_df, test_calib_results = calc_calibration(params, model, 'test', device, prefix = 'best_')
     test_df.to_csv(os.path.join("runs", params['exp_name'], 'test_calib.csv'))
-    if log_online:
-        wandb.log(test_calib_results)
         
 if __name__ == "__main__":
     main()

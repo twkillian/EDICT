@@ -1,21 +1,11 @@
-import os, sys, time, math
-import argparse
+import os
 import yaml
 import click
 
-import pdb
-
 import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
-import pandas as pd
-
-from sklearn.model_selection import train_test_split
 
 import torch
-from torch.utils.data import DataLoader, Dataset
 
-import wandb
 import hashlib
 
 from data_utils import define_dataset
@@ -87,7 +77,6 @@ def run_clf_epoch(dl, model, clf, criterion, optimizer, delta_t=0.05, max_time=5
 @click.option('--eval', is_flag=True, help="If true, classification model has already been trained and we'll only be operating on the test data")
 @click.option('--reweight_obs', is_flag=True, help="If true, we will reweight the observations according to the predicted distribution when evaluating on the test set.")
 @click.option('--use_pop_mean', is_flag=True, help="If true, we will reweight the observations according to the training population mean and std...")
-@click.option('--log_online', is_flag=True, help="log on wandb")
 @click.option('--options', '-o', multiple=True, nargs=2, type=click.Tuple([str, str]))
 def run_classification(exp_name, add_noise, seed, device, use_seq, eval, reweight_obs, use_pop_mean, log_online, options):   
     # Initialize the artifacts for saving...
@@ -180,10 +169,6 @@ def run_classification(exp_name, add_noise, seed, device, use_seq, eval, reweigh
         device = torch.device(device)
     except:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
-    if log_online:
-        wandb.init(project='EDICT', config = params,
-                name = f"clf_{params['exp_name']}_{params['seed']}_{hashlib.md5(str(params).encode('utf-8')).hexdigest()[:6]}")
 
     dataset_name = params.get("dataset_name", "syn_data")
     delta_t = params.get('delta_t', 0.05)
@@ -265,12 +250,6 @@ def run_classification(exp_name, add_noise, seed, device, use_seq, eval, reweigh
                                                                             delta_t=params['delta_t'], max_time=params['max_time'], train=True, 
                                                                             train_seq_model= not use_seq, device=device, model_type=params['model_type'], dist_type=dist_type)
 
-            if log_online:
-                wandb.log({
-                    'training/clf_loss': epoch_loss/num_batches,
-                    'training/clf_acc': num_correct/total_num
-                }, step = epoch)
-
 
             training_accuracies.append(num_correct/total_num)
             training_losses.append(epoch_loss/num_batches)
@@ -283,12 +262,6 @@ def run_classification(exp_name, add_noise, seed, device, use_seq, eval, reweigh
                 val_epoch_loss, val_num_batches, val_num_correct, val_total_num, _, _ = run_clf_epoch(val_dl, seq_model, clf, criterion, optimizer, 
                                                                                                 delta_t=params['delta_t'], max_time=params['max_time'], train=False, 
                                                                                                 train_seq_model=False, device=device, model_type=params['model_type'], dist_type=dist_type)
-
-                if log_online:
-                    wandb.log({
-                        'validation/clf_loss': val_epoch_loss/val_num_batches,
-                        'validation/clf_acc': val_num_correct/val_total_num
-                    }, step = epoch)
 
 
                 validation_accuracies.append(val_num_correct/val_total_num)
@@ -351,16 +324,6 @@ def run_classification(exp_name, add_noise, seed, device, use_seq, eval, reweigh
     clf_eval_fname = os.path.join(clf_dir, f"eval_n{add_noise}{eval_type}{use_pop}.pt")
 
     torch.save(save_dict, clf_eval_fname)
-
-    if log_online:
-        for i in ['val_loss', 'val_acc']:
-            value = float(state_dict[i][0]) if isinstance(state_dict[i], (list, tuple)) else float(state_dict[i])
-            wandb.log({'best_'+i: value})
-
-        for i in save_dict:
-            if i not in ['y', 'clf_preds']:
-                value = float(save_dict[i][0]) if isinstance(save_dict[i], (list, tuple)) else save_dict[i]
-                wandb.log({'test_'+i.replace("test_", ""):value})
         
 if __name__ == '__main__':
     run_classification()

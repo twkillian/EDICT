@@ -913,7 +913,7 @@ def create_clf_dataset(params, add_noise=None, device='cpu'):
     if not os.path.isfile(dataset_dir):
         
         if dataset_name == 'syn_data':
-            generate_syn_ODEData(T=T, det=delta_t, sample_rate=sample_rate, duale_sample_rate=dual_sample_rate, output_dir= f"./datasets/{dataset_name}/")
+            generate_syn_ODEData(T=T, dt=delta_t, sample_rate=sample_rate, dual_sample_rate=dual_sample_rate, output_dir= f"./datasets/{dataset_name}/")
         else:
             raise ValueError("Dataset name is not recognized")
 
@@ -974,7 +974,7 @@ def create_ode_dataset(params, constrain_test_size=False, add_noise=None, device
     if not os.path.isfile(dataset_dir):
         
         if dataset_name == 'syn_data':
-            generate_syn_ODEData(T=T, det=delta_t, sample_rate=sample_rate, duale_sample_rate=dual_sample_rate, output_dir= f"./datasets/{dataset_name}/")
+            generate_syn_ODEData(T=T, dt=delta_t, sample_rate=sample_rate, dual_sample_rate=dual_sample_rate, output_dir= f"./datasets/{dataset_name}/")
         else:
             raise ValueError("Dataset name is not recognized")
 
@@ -1011,9 +1011,10 @@ def create_ode_dataset(params, constrain_test_size=False, add_noise=None, device
 def define_dataset(params, add_noise=None, constrain_test_size=False, device='cpu'):
     """Using the params dictionary, construct a dataset, initialize a dataloader and return to the model training script"""
 
-    if params.dataset_format == 'ode':
+    dataset_format = params['dataset_format']
+    if dataset_format == 'ode':
         train_loader, val_loader, test_loader, params = create_ode_dataset(params, constrain_test_size, add_noise, device)
-    elif params.dataset_format == 'clf':
+    elif dataset_format == 'clf':
         train_loader, val_loader, test_loader, params = create_clf_dataset(params, add_noise, device)
 
     return train_loader, val_loader, test_loader, params

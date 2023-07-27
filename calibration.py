@@ -70,10 +70,10 @@ def calc_calibration(params, model, sset, device, prefix = '', num_seq = None):
             index_extrap = batch['index_val']
 
             if params['dist_type'] == 'niw':
-                _, _, _, t_vec, mu_vec, lmb_vec, psi_vec, nu_vec, h_vec, _, _ = model(times, time_ptr, X, M, obs_idx, delta_t=delta_t, T=max_time, cov=cov, return_path=True, pat_idx=pat_idx)
+                _, _, t_vec, mu_vec, lmb_vec, psi_vec, nu_vec, h_vec, _, _ = model(times, time_ptr, X, M, obs_idx, delta_t=delta_t, T=max_time, cov=cov, return_path=True, pat_idx=pat_idx)
                 v = (torch.exp(psi_vec) / (lmb_vec * (nu_vec - mu_vec.shape[-1] -1)))  # The expected variance of the NIW distribution
             else:
-                _, loss, _, t_vec, p_vec, _, _, _ = model(times, time_ptr, X, M, obs_idx, delta_t=delta_t, T=max_time, cov=cov, return_path=True, pat_idx=pat_idx)
+                _, loss, t_vec, p_vec, _, _, _ = model(times, time_ptr, X, M, obs_idx, delta_t=delta_t, T=max_time, cov=cov, return_path=True, pat_idx=pat_idx)
 
                 mu_vec, logvar = torch.chunk(p_vec, 2, dim=-1)
                 v = torch.exp(0.5*logvar)
